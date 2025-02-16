@@ -3,8 +3,8 @@ from flask import Flask, request
 import os
 
 # 🔹 Muhit o'zgaruvchilaridan TOKEN olish
-TOKEN = os.getenv("BOT_TOKEN")  # ❌ To‘g‘ridan-to‘g‘ri yozish o‘rniga muhit o‘zgaruvchisidan olamiz
-HEROKU_APP_NAME = "sunnat-telegram-bot"
+TOKEN = os.getenv("BOT_TOKEN")  # Railway'dagi Environment Variables ichida saqlangan
+RAILWAY_APP_URL = os.getenv("RAILWAY_APP_URL")  # Railway URL o‘rniga qo‘yiladi
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
@@ -37,5 +37,5 @@ def send_movie(message):
 
 if __name__ == '__main__':
     bot.remove_webhook()
-    bot.set_webhook(url=f"https://{HEROKU_APP_NAME}.herokuapp.com/{TOKEN}")
+    bot.set_webhook(url=f"{RAILWAY_APP_URL}/{TOKEN}")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
