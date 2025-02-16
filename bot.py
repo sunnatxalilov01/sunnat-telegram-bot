@@ -7,16 +7,9 @@ TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"  # 🔹 Tokenni almasht
 CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Obuna bo‘lishi shart bo‘lgan kanallar
 MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"  # 🔹 Kinolar saqlanadigan kanal
 ADMIN_ID = 8936611  # 🔹 Admin ID
+USER_FILE = "users.json"
 
 bot = telebot.TeleBot(TOKEN)
-
-movies = {
-    "15": 2,  # 🔹 Avengers: Endgame (message_id)
-    "22": 5,  # 🔹 Titanic (message_id)
-    "33": 8   # 🔹 Interstellar (message_id)
-}
-
-USER_FILE = "users.json"
 
 def load_users():
     try:
@@ -45,15 +38,15 @@ def check_subscription(user_id):
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.chat.id
-    users.add(user_id)  # 🔹 Foydalanuvchini ro‘yxatga olish
+    users.add(user_id)
     save_users(users)
     
     if check_subscription(user_id):
-        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino kodini kiriting:")
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
     else:
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
-            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
+            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
         markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
         bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va tasdiqlash tugmasini bosing:", reply_markup=markup)
 
@@ -61,7 +54,7 @@ def start(message):
 def check_subs(call):
     user_id = call.message.chat.id
     if check_subscription(user_id):
-        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino kodini kiriting:")
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
     else:
         bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
 
@@ -74,48 +67,36 @@ def reklama(message):
         bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
 
 def send_advertisement(message):
-    if message.text:  # 🔹 Matnli reklama
-        for user_id in users:
-            try:
+    for user_id in users:
+        try:
+            if message.text:
                 bot.send_message(user_id, message.text)
-            except Exception:
-                pass
-    elif message.photo:  # 🔹 Rasmli reklama
-        for user_id in users:
-            try:
+            elif message.photo:
                 bot.send_photo(user_id, message.photo[-1].file_id, caption=message.caption)
-            except Exception:
-                pass
-    elif message.video:  # 🔹 Videoli reklama
-        for user_id in users:
-            try:
+            elif message.video:
                 bot.send_video(user_id, message.video.file_id, caption=message.caption)
-            except Exception:
-                pass
-    else:
-        bot.send_message(ADMIN_ID, "❌ Reklama noto‘g‘ri formatda!")
-
+        except Exception:
+            pass
     bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
 
-@bot.message_handler(func=lambda message: True)
+@bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi
+
 def send_movie(message):
     user_id = message.chat.id
     if not check_subscription(user_id):
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
-            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
+            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
         markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
         bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
         return  
     
-    movie_code = message.text.strip()
-    
-    if movie_code in movies:
-        message_id = movies[movie_code]
+    message_id = int(message.text.strip())
+    try:
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=movie_code))
+        markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
         bot.copy_message(user_id, MOVIE_CHANNEL, message_id, reply_markup=markup)
-    else:
-        bot.send_message(user_id, "❌ Bunday kod topilmadi.")
+    except Exception:
+        bot.send_message(user_id, "❌ Bunday message ID topilmadi yoki video mavjud emas!")
 
 bot.polling(none_stop=True)
