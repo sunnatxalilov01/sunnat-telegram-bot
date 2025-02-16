@@ -21,8 +21,13 @@ def load_users():
 
 # Foydalanuvchilarni saqlash
 def save_users(users):
-    with open(USER_FILE, "w") as file:
-        json.dump(list(users), file, indent=2)
+    print(f"Saqlanyapti: {users}")  # ✅ Log
+    try:
+        with open(USER_FILE, "w") as file:
+            json.dump(list(users), file, indent=2)
+        print("✅ Foydalanuvchilar saqlandi!")
+    except Exception as e:
+        print(f"❌ Xatolik: {e}")
 
 users = load_users()
 
@@ -50,7 +55,7 @@ def start(message):
     else:
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
-            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
+            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
         markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
         bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va tasdiqlash tugmasini bosing:", reply_markup=markup)
 
@@ -99,7 +104,7 @@ def send_movie(message):
     if not check_subscription(user_id):
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
-            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
+            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
         markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
         bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
         return  
