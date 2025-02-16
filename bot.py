@@ -11,7 +11,7 @@ bot = telebot.TeleBot(TOKEN)
 movies = {
     "15": 2,  # 🔹 Avengers: Endgame (message_id)
     "22": 5,  # 🔹 Titanic (message_id)
-    "33": 789   # 🔹 Interstellar (message_id)
+    "33": 8   # 🔹 Interstellar (message_id)
 }
 
 def check_subscription(user_id):
