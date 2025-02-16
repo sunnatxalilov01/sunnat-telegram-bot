@@ -1,41 +1,45 @@
 import telebot
-from flask import Flask, request
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
 
-# 🔹 Muhit o'zgaruvchilaridan TOKEN olish
-TOKEN = os.getenv("BOT_TOKEN")  # Railway'dagi Environment Variables ichida saqlangan
-RAILWAY_APP_URL = os.getenv("RAILWAY_APP_URL")  # Railway URL o‘rniga qo‘yiladi
+TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"
+CHANNELS = ["@channel1", "@channel2", "@channel3"]  # Kanal usernames
 
 bot = telebot.TeleBot(TOKEN)
-app = Flask(__name__)
+movies = {
+    "15": "🎬 Kino: Avengers: Endgame",
+    "22": "🎬 Kino: Titanic",
+    "33": "🎬 Kino: Interstellar"
+}
 
-@app.route('/')
-def home():
-    return "✅ Telegram bot server ishlayapti!"
-
-@app.route(f'/{TOKEN}', methods=['POST'])
-def get_message():
-    json_str = request.get_data().decode('UTF-8')
-    update = telebot.types.Update.de_json(json_str)
-    bot.process_new_updates([update])
-    return "!", 200
+def check_subscription(user_id):
+    for channel in CHANNELS:
+        status = bot.get_chat_member(channel, user_id).status
+        if status not in ['member', 'administrator', 'creator']:
+            return False
+    return True
 
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "👋 Salom! Ushbu bot kinolarni kod orqali yuboradi. \n\n🔢 Kodni kiriting:")
+def start(message):
+    user_id = message.chat.id
+    markup = InlineKeyboardMarkup()
+    for channel in CHANNELS:
+        markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
+    markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
+    bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va tasdiqlash tugmasini bosing:", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data == "check_subs")
+def check_subs(call):
+    user_id = call.message.chat.id
+    if check_subscription(user_id):
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino kodini kiriting:")
+    else:
+        bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
 
 @bot.message_handler(func=lambda message: True)
 def send_movie(message):
     movie_code = message.text.strip()
-    movies = {
-        "15": "🎬 Kino: Avengers: Endgame",
-        "22": "🎬 Kino: Titanic",
-        "33": "🎬 Kino: Interstellar"
-    }
     response = movies.get(movie_code, "❌ Bunday kod topilmadi.")
     bot.send_message(message.chat.id, response)
 
-if __name__ == '__main__':
-    bot.remove_webhook()
-    bot.set_webhook(url=f"{RAILWAY_APP_URL}/{TOKEN}")
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+bot.polling(none_stop=True)
