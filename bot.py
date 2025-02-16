@@ -9,7 +9,7 @@ MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"  # 🔹 Kinolar saqlanadigan ka
 bot = telebot.TeleBot(TOKEN)
 
 movies = {
-    "15": 7,  # 🔹 Avengers: Endgame (message_id)
+    "15": 2,  # 🔹 Avengers: Endgame (message_id)
     "22": 5,  # 🔹 Titanic (message_id)
     "33": 789   # 🔹 Interstellar (message_id)
 }
