@@ -31,20 +31,22 @@ def save_users(users):
 
 users = load_users()
 
-# Obuna tekshirish
+# ✅ Obuna tekshirish funksiyasi (TO‘G‘RILANGAN)
 def check_subscription(user_id):
-    time.sleep(1)
+    time.sleep(1)  # API limitdan oshib ketmaslik uchun
     for channel in CHANNELS:
         try:
-            status = bot.get_chat_member(channel, user_id).status
-            if status in ['member', 'administrator', 'creator']:
-                continue
-            return False
-        except Exception:
-            return False
-    return True
+            member = bot.get_chat_member(channel, user_id)
+            if member.status in ['member', 'administrator', 'creator']:
+                continue  # Agar foydalanuvchi a’zo bo‘lsa, keyingi kanalga o‘tamiz
+            else:
+                return False  # Agar birorta kanalga a’zo bo‘lmasa, noto‘g‘ri qaytaramiz
+        except Exception as e:
+            print(f"⚠️ Xatolik: {e}")
+            return False  # Agar kanal topilmasa yoki boshqa xatolik bo‘lsa, noto‘g‘ri deb qaytaramiz
+    return True  # Agar hamma kanallarga a’zo bo‘lsa, to‘g‘ri qaytaramiz
 
-# Start komandasi
+# 🔹 Start komandasi
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.chat.id
@@ -56,7 +58,7 @@ def start(message):
     else:
         send_subscription_message(user_id)
 
-# Obunani tekshirish tugmasi
+# 🔹 Obunani tekshirish tugmasi
 @bot.callback_query_handler(func=lambda call: call.data == "check_subs")
 def check_subs(call):
     user_id = call.message.chat.id
@@ -65,15 +67,20 @@ def check_subs(call):
     else:
         bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
 
-# Kanal obuna xabari
+# 🔹 Kanal obuna xabari (TO‘G‘RILANGAN)
 def send_subscription_message(user_id):
     markup = InlineKeyboardMarkup()
+    
+    # Kanallar uchun tugmalar yaratish
     for channel in CHANNELS:
-        markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
-    markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
-    bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va tasdiqlash tugmasini bosing:", reply_markup=markup)
+        markup.add(InlineKeyboardButton(f"🔗 {channel}", url=f"https://t.me/{channel[1:]}"))
+    
+    # Tasdiqlash tugmasi
+    markup.add(InlineKeyboardButton("✅ Obunani tekshirish", callback_data="check_subs"))
 
-# Admin uchun reklama yuborish
+    bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va **✅ Obunani tekshirish** tugmasini bosing.", reply_markup=markup)
+
+# 🔹 Admin uchun reklama yuborish
 @bot.message_handler(commands=['reklama'])
 def reklama(message):
     if message.chat.id == ADMIN_ID:
@@ -82,7 +89,7 @@ def reklama(message):
     else:
         bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
 
-# Reklama yuborish
+# 🔹 Reklama yuborish funksiyasi
 def send_advertisement(message):
     global users
     users = load_users()
@@ -102,7 +109,7 @@ def send_advertisement(message):
     
     bot.send_message(ADMIN_ID, f"✅ Reklama {success} foydalanuvchiga yuborildi! ❌ {failed} foydalanuvchiga yuborilmadi.")
 
-# Kino kodini qabul qilish
+# 🔹 Kino kodini qabul qilish
 @bot.message_handler(func=lambda message: message.text.isdigit())
 def send_movie(message):
     user_id = message.chat.id
@@ -118,7 +125,6 @@ def send_movie(message):
     except Exception:
         bot.send_message(user_id, "❌ Bunday Kod topilmadi yoki video mavjud emas!")
 
-# Botni doimiy ishlatish
+# 🔹 Botni doimiy ishlatish
 bot.remove_webhook()
 bot.infinity_polling()
-
