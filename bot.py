@@ -1,21 +1,22 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import os
-import time  # ⬅ Kutish uchun modul qo‘shildi
+import time  
 
-TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"
-CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # Kanal usernames
+TOKEN = "YOUR_BOT_TOKEN"  # 🔹 Tokenni o'zingiznikiga almashtiring
+CHANNELS = ["@YOUR_CHANNEL"]  # 🔹 Kino saqlanadigan kanal username'si
 
 bot = telebot.TeleBot(TOKEN)
+
+# 🔹 Kino kodlari va ularga mos message_id lar
 movies = {
-    "15": "🎬 Kino: Avengers: Endgame",
-    "22": "🎬 Kino: Titanic",
-    "33": "🎬 Kino: Interstellar"
+    "15": 123,  # 🔹 Avengers: Endgame (message_id)
+    "22": 456,  # 🔹 Titanic (message_id)
+    "33": 789   # 🔹 Interstellar (message_id)
 }
 
 # Obuna tekshirish funksiyasi
 def check_subscription(user_id):
-    time.sleep(1)  # 🔹 API yangilanishi uchun 1 soniya kutamiz
+    time.sleep(1)
     for channel in CHANNELS:
         try:
             status = bot.get_chat_member(channel, user_id).status
@@ -47,18 +48,22 @@ def check_subs(call):
 def send_movie(message):
     user_id = message.chat.id
 
-    # **Obuna bo‘lganligini tekshiramiz**
+    # Obuna bo‘lganligini tekshirish
     if not check_subscription(user_id):
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
             markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
         markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
         bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
-        return  # Kino yuborilmaydi
+        return  
 
     # Kino kodini tekshirish
     movie_code = message.text.strip()
-    response = movies.get(movie_code, "❌ Bunday kod topilmadi.")
-    bot.send_message(user_id, response)
+    message_id = movies.get(movie_code)
+
+    if message_id:
+        bot.copy_message(user_id, CHANNELS[0], message_id)  # 🔹 Kino foydalanuvchiga jo‘natiladi (Forward emas!)
+    else:
+        bot.send_message(user_id, "❌ Bunday kod topilmadi.")
 
 bot.polling(none_stop=True)
