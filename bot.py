@@ -1,83 +1,48 @@
-
-# TOKEN = "7314638802:AAEGABdxn_p7CiqogkP0T8xcDKZL2pxWzbM"  # 🔹 Tokenni almashtiring
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import requests
 import json
 import time  
 
-# 🔹 Bot va GitHub sozlamalari
-TOKEN = "7314638802:AAAGABdxn_p7CiqogkP0T8xcDKZL2pxWzbM"
-CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]
-MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"
+TOKEN = "7314638802:AAEGABdxn_p7CiqogkP0T8xcDKZL2pxWzbM"  # 🔹 Tokenni almashtiring
+CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Obuna bo‘lishi shart bo‘lgan kanallar
+MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"  # 🔹 Kinolar saqlanadigan kanal
 ADMIN_ID = 8936611  # 🔹 Admin ID
-
-# 🔹 GitHub sozlamalari
-GITHUB_TOKEN = "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"
-REPO_OWNER = "sunnatxalilov01"
-REPO_NAME = "sunnat-telegram-bot"
-FILE_PATH = "users.json"
-BRANCH = "main"
+USER_FILE = "users.json"
 
 bot = telebot.TeleBot(TOKEN)
 
-# 🔹 GitHub-dan users.json ni yuklash
+# Foydalanuvchilarni yuklash
 def load_users():
-    API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_PATH}"
-    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-    
     try:
-        response = requests.get(API_URL, headers=HEADERS)
-        if response.status_code == 200:
-            file_data = response.json()
-            content = file_data['content']
-            sha = file_data['sha']
-            users = json.loads(requests.utils.unquote(content).encode('utf-8'))
-            return set(users), sha
-        else:
-            return set(), None
-    except Exception as e:
-        print(f"❌ Xatolik: {e}")
-        return set(), None
+        with open(USER_FILE, "r") as file:
+            return set(json.load(file))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return set()
 
-# 🔹 users.json ni GitHub-ga saqlash
+# Foydalanuvchilarni saqlash
 def save_users(users):
-    API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_PATH}"
-    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-
     try:
-        users_json = json.dumps(list(users), indent=2)
-        users_encoded = requests.utils.quote(users_json)
-        _, sha = load_users()
-
-        data = {"message": "Update users.json", "content": users_encoded, "branch": BRANCH}
-        if sha:
-            data["sha"] = sha
-
-        response = requests.put(API_URL, headers=HEADERS, json=data)
-        if response.status_code in [200, 201]:
-            print("✅ users.json GitHub-ga saqlandi!")
-        else:
-            print(f"❌ Xatolik: {response.json()}")
+        with open(USER_FILE, "w") as file:
+            json.dump(list(users), file, indent=2)
     except Exception as e:
         print(f"❌ Xatolik: {e}")
 
-users, _ = load_users()
+users = load_users()
 
-# 🔹 Obuna tekshirish
+# ✅ Obuna tekshirish funksiyasi (TO‘G‘RILANGAN)
 def check_subscription(user_id):
-    time.sleep(1)
+    time.sleep(1)  # API limitdan oshib ketmaslik uchun
     for channel in CHANNELS:
         try:
             member = bot.get_chat_member(channel, user_id)
             if member.status in ['member', 'administrator', 'creator']:
-                continue
+                continue  # Agar foydalanuvchi a’zo bo‘lsa, keyingi kanalga o‘tamiz
             else:
-                return False
+                return False  # Agar birorta kanalga a’zo bo‘lmasa, noto‘g‘ri qaytaramiz
         except Exception as e:
             print(f"⚠️ Xatolik: {e}")
-            return False
-    return True
+            return False  # Agar kanal topilmasa yoki boshqa xatolik bo‘lsa, noto‘g‘ri deb qaytaramiz
+    return True  # Agar hamma kanallarga a’zo bo‘lsa, to‘g‘ri qaytaramiz
 
 # 🔹 Start komandasi
 @bot.message_handler(commands=['start'])
@@ -87,7 +52,7 @@ def start(message):
     save_users(users)
     
     if check_subscription(user_id):
-        bot.send_message(user_id, "✅ Kanallarga a’zo bo‘lgansiz! Kino ID kiriting:")
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
     else:
         send_subscription_message(user_id)
 
@@ -96,17 +61,51 @@ def start(message):
 def check_subs(call):
     user_id = call.message.chat.id
     if check_subscription(user_id):
-        bot.send_message(user_id, "✅ Kanallarga a’zo bo‘lgansiz! Kino ID kiriting:")
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
     else:
-        bot.send_message(user_id, "❌ Kanallarga a’zo bo‘lmadingiz!")
+        bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
 
-# 🔹 Kanal obuna xabari
+# 🔹 Kanal obuna xabari (TO‘G‘RILANGAN)
 def send_subscription_message(user_id):
     markup = InlineKeyboardMarkup()
+    
+    # Kanallar uchun tugmalar yaratish
     for channel in CHANNELS:
         markup.add(InlineKeyboardButton(f"🔗 {channel}", url=f"https://t.me/{channel[1:]}"))
+    
+    # Tasdiqlash tugmasi
     markup.add(InlineKeyboardButton("✅ Obunani tekshirish", callback_data="check_subs"))
-    bot.send_message(user_id, "🔹 Kanallarga obuna bo‘ling va **✅ Obunani tekshirish** tugmasini bosing.", reply_markup=markup)
+
+    bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va **✅ Obunani tekshirish** tugmasini bosing.", reply_markup=markup)
+
+# 🔹 Admin uchun reklama yuborish
+@bot.message_handler(commands=['reklama'])
+def reklama(message):
+    if message.chat.id == ADMIN_ID:
+        bot.send_message(ADMIN_ID, "📢 Reklama xabarini yuboring (matn, rasm yoki video).")
+        bot.register_next_step_handler(message, send_advertisement)
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+# 🔹 Reklama yuborish funksiyasi
+def send_advertisement(message):
+    global users
+    users = load_users()
+    success, failed = 0, 0
+    
+    for user_id in users:
+        try:
+            if message.text:
+                bot.send_message(user_id, message.text)
+            elif message.photo:
+                bot.send_photo(user_id, message.photo[-1].file_id, caption=message.caption)
+            elif message.video:
+                bot.send_video(user_id, message.video.file_id, caption=message.caption)
+            success += 1
+        except Exception:
+            failed += 1
+    
+    bot.send_message(ADMIN_ID, f"✅ Reklama {success} foydalanuvchiga yuborildi! ❌ {failed} foydalanuvchiga yuborilmadi.")
 
 # 🔹 Kino kodini qabul qilish
 @bot.message_handler(func=lambda message: message.text.isdigit())
@@ -124,6 +123,6 @@ def send_movie(message):
     except Exception:
         bot.send_message(user_id, "❌ Bunday Kod topilmadi yoki video mavjud emas!")
 
-# 🔹 Botni ishga tushirish
+# 🔹 Botni doimiy ishlatish
 bot.remove_webhook()
 bot.infinity_polling()
