@@ -3,11 +3,17 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import json
 import time  
 
+<<<<<<< Updated upstream
 TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"  # 🔹 Tokenni almashtiring
 CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Obuna bo‘lishi shart bo‘lgan kanallar
 MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"  # 🔹 Kinolar saqlanadigan kanal
 ADMIN_ID = 8936611  # 🔹 Admin ID
 USER_FILE = "users.json"
+=======
+# 🔹 Muhit o'zgaruvchilaridan TOKEN olish
+TOKEN = os.getenv("BOT_TOKEN")  # Railway'dagi Environment Variables ichida saqlangan
+RAILWAY_APP_URL = os.getenv("RAILWAY_APP_URL")  # Railway URL o‘rniga qo‘yiladi
+>>>>>>> Stashed changes
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -101,4 +107,11 @@ def send_movie(message):
     except Exception:
         bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
+<<<<<<< Updated upstream
 bot.polling(none_stop=True)
+=======
+if __name__ == '__main__':
+    bot.remove_webhook()
+    bot.set_webhook(url=f"{RAILWAY_APP_URL}/{TOKEN}")
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+>>>>>>> Stashed changes
