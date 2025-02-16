@@ -38,8 +38,9 @@ def check_subscription(user_id):
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.chat.id
-    users.add(user_id)
-    save_users(users)
+    if user_id not in users:
+        users.add(user_id)
+        save_users(users)
     
     if check_subscription(user_id):
         bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
@@ -67,6 +68,8 @@ def reklama(message):
         bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
 
 def send_advertisement(message):
+    global users
+    users = load_users()  # 🔹 Har safar yangi foydalanuvchilarni yuklash
     for user_id in users:
         try:
             if message.text:
@@ -80,7 +83,6 @@ def send_advertisement(message):
     bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
 
 @bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi
-
 def send_movie(message):
     user_id = message.chat.id
     if not check_subscription(user_id):
