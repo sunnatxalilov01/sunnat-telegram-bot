@@ -9,7 +9,7 @@ bot = telebot.TeleBot(TOKEN)
 
 # 🔹 Kino kodlari va ularga mos message_id lar
 movies = {
-    "15": 123,  # 🔹 Avengers: Endgame (message_id)
+    "15": 29750,  # 🔹 Avengers: Endgame (message_id)
     "22": 456,  # 🔹 Titanic (message_id)
     "33": 789   # 🔹 Interstellar (message_id)
 }
