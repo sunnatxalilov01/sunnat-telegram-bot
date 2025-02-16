@@ -1,6 +1,7 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
+import time  # ⬅ Kutish uchun modul qo‘shildi
 
 TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"
 CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # Kanal usernames
@@ -14,6 +15,7 @@ movies = {
 
 # Obuna tekshirish funksiyasi
 def check_subscription(user_id):
+    time.sleep(1)  # 🔹 API yangilanishi uchun 1 soniya kutamiz
     for channel in CHANNELS:
         try:
             status = bot.get_chat_member(channel, user_id).status
