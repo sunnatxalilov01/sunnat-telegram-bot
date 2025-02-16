@@ -2,8 +2,8 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import time  
 
-TOKEN = "YOUR_BOT_TOKEN"  # 🔹 Tokenni o'zingiznikiga almashtiring
-CHANNELS = ["@YOUR_CHANNEL"]  # 🔹 Kino saqlanadigan kanal username'si
+TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"  # 🔹 Tokenni o'zingiznikiga almashtiring
+CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Kino saqlanadigan kanal username'si
 
 bot = telebot.TeleBot(TOKEN)
 
