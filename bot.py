@@ -97,6 +97,6 @@ def send_movie(message):
         markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
         bot.copy_message(user_id, MOVIE_CHANNEL, message_id, reply_markup=markup)
     except Exception:
-        bot.send_message(user_id, "❌ Bunday message ID topilmadi yoki video mavjud emas!")
+        bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
 bot.polling(none_stop=True)
