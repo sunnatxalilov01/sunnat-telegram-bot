@@ -2,19 +2,18 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import time  
 
-TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"  # 🔹 Tokenni o'zingiznikiga almashtiring
-CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Kino saqlanadigan kanal username'si
+TOKEN = "YOUR_BOT_TOKEN"  # 🔹 Tokenni o'zingiznikiga almashtiring
+CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Obuna bo‘lishi shart bo‘lgan kanallar
+MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"  # 🔹 Kinolar saqlanadigan kanal
 
 bot = telebot.TeleBot(TOKEN)
 
-# 🔹 Kino kodlari va ularga mos message_id lar
 movies = {
     "15": 29750,  # 🔹 Avengers: Endgame (message_id)
-    "22": 456,  # 🔹 Titanic (message_id)
+    "22": 5,  # 🔹 Titanic (message_id)
     "33": 789   # 🔹 Interstellar (message_id)
 }
 
-# Obuna tekshirish funksiyasi
 def check_subscription(user_id):
     time.sleep(1)
     for channel in CHANNELS:
@@ -48,7 +47,6 @@ def check_subs(call):
 def send_movie(message):
     user_id = message.chat.id
 
-    # Obuna bo‘lganligini tekshirish
     if not check_subscription(user_id):
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
@@ -57,12 +55,11 @@ def send_movie(message):
         bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
         return  
 
-    # Kino kodini tekshirish
     movie_code = message.text.strip()
     message_id = movies.get(movie_code)
 
     if message_id:
-        bot.copy_message(user_id, CHANNELS[0], message_id)  # 🔹 Kino foydalanuvchiga jo‘natiladi (Forward emas!)
+        bot.copy_message(user_id, MOVIE_CHANNEL, message_id)  # ✅ Endi kino to‘g‘ri kanaldan olinadi
     else:
         bot.send_message(user_id, "❌ Bunday kod topilmadi.")
 
