@@ -38,6 +38,64 @@ def save_users(users):
 users = load_users()
 settings = load_settings()
 
+
+
+
+
+# Kanal qo'shish
+@bot.message_handler(commands=['add_channel'])
+def add_channel(message):
+    if message.chat.id == ADMIN_ID:
+        try:
+            channel_name = message.text.split()[1]  # Kanal nomi
+            channels = settings.get("channels", [])
+            if channel_name not in channels:
+                channels.append(channel_name)
+                settings["channels"] = channels
+                save_settings(settings)
+                bot.send_message(ADMIN_ID, f"Kanal {channel_name} muvaffaqiyatli qo'shildi.")
+            else:
+                bot.send_message(ADMIN_ID, f"{channel_name} kanali allaqachon mavjud.")
+        except IndexError:
+            bot.send_message(ADMIN_ID, "Kanal nomini kiriting: /add_channel @kanal_nomi")
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+# Kanalni o'chirish
+@bot.message_handler(commands=['remove_channel'])
+def remove_channel(message):
+    if message.chat.id == ADMIN_ID:
+        try:
+            channel_name = message.text.split()[1]  # Kanal nomi
+            channels = settings.get("channels", [])
+            if channel_name in channels:
+                channels.remove(channel_name)
+                settings["channels"] = channels
+                save_settings(settings)
+                bot.send_message(ADMIN_ID, f"Kanal {channel_name} muvaffaqiyatli o'chirildi.")
+            else:
+                bot.send_message(ADMIN_ID, f"{channel_name} kanali topilmadi.")
+        except IndexError:
+            bot.send_message(ADMIN_ID, "Kanal nomini kiriting: /remove_channel @kanal_nomi")
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+# Mavjud kanallarni ko'rsatish
+@bot.message_handler(commands=['list_channels'])
+def list_channels(message):
+    if message.chat.id == ADMIN_ID:
+        channels = settings.get("channels", [])
+        if channels:
+            bot.send_message(ADMIN_ID, "Mavjud kanallar:\n" + "\n".join(channels))
+        else:
+            bot.send_message(ADMIN_ID, "Hozircha hech qanday kanal mavjud emas.")
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+
+
+
+
 def check_subscription(user_id):
     channels = settings.get("channels", [])
     for channel in channels:
