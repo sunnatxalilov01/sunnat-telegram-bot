@@ -107,6 +107,9 @@ def check_subscription(user_id):
             return False
     return True
 
+
+#----------------------------
+
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.chat.id
@@ -127,16 +130,9 @@ def send_subscription_message(user_id):
     
     markup = InlineKeyboardMarkup()
     for channel in channels:
-        markup.add(InlineKeyboardButton("🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
+        markup.add(InlineKeyboardButton("🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
     markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
     bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va tasdiqlash tugmasini bosing:", reply_markup=markup)
-
-
-
-
-#---------------------------------
-
-
 
 # Tasdiqlash tugmasi bosilganda
 @bot.callback_query_handler(func=lambda call: call.data == "check_subs")
@@ -147,6 +143,7 @@ def callback_check_subs(call):
     else:
         send_subscription_message(user_id)  # Agar obuna bo'lmagan bo'lsa, qaytadan tasdiqlashni so'raymiz
     bot.answer_callback_query(call.id)  # Callbackni javoblash
+
 
 
 #---------------------------------------------
