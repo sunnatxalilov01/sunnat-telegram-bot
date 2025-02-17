@@ -222,7 +222,39 @@ def send_movie(message):
         bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
 
-#----------------------------------------------
+#---------------------------------------------- admin panel
+
+@bot.message_handler(commands=['admin'])
+def admin_panel(message):
+    if message.chat.id == ADMIN_ID:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("📢 Reklama", callback_data="reklama"))
+        markup.add(InlineKeyboardButton("➕ Kanal qo‘shish", callback_data="add_channel"),
+                   InlineKeyboardButton("❌ Kanalni o‘chirish", callback_data="remove_channel"))
+        markup.add(InlineKeyboardButton("📋 Kanallar ro‘yxati", callback_data="list_channels"))
+        markup.add(InlineKeyboardButton("🔄 Botni qayta ishga tushirish", callback_data="restart"))
+        
+        bot.send_message(ADMIN_ID, "⚙️ *Admin Panel* – Kerakli funksiyani tanlang:", 
+                         parse_mode="Markdown", reply_markup=markup)
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+@bot.callback_query_handler(func=lambda call: True)
+def admin_actions(call):
+    if call.message.chat.id == ADMIN_ID:
+        if call.data == "reklama":
+            reklama(call.message)
+        elif call.data == "add_channel":
+            bot.send_message(ADMIN_ID, "➕ Kanal qo‘shish uchun: /add_channel @kanal_nomi")
+        elif call.data == "remove_channel":
+            bot.send_message(ADMIN_ID, "❌ Kanal o‘chirish uchun: /remove_channel @kanal_nomi")
+        elif call.data == "list_channels":
+            list_channels(call.message)
+        elif call.data == "restart":
+            bot.send_message(ADMIN_ID, "♻️ Bot qayta ishga tushirilmoqda... (hozircha qo‘lda qayta ishga tushiring)")
+    bot.answer_callback_query(call.id)
+
+#--------------------------------
 
 # bot.polling(none_stop=True)
 # 🔹 Botni doimiy ishlatish
