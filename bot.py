@@ -263,7 +263,7 @@ def admin_panel(message):
         markup.add(InlineKeyboardButton("👥 Obunachilar soni", callback_data="subscribers"))
         markup.add(InlineKeyboardButton("📊 Statistika", callback_data="stats"))
         markup.add(InlineKeyboardButton("📢 Reklama yuborish", callback_data="send_ad"))
-        bot.send_message(ADMIN_ID, "🔹 Admin Panel", reply_markup=markup)
+        bot.send_message(ADMIN_ID, "🔹 users Panel", reply_markup=markup)
     else:
         bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
 
@@ -298,7 +298,6 @@ def send_advertisement(message):
             pass
     bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
 
-bot.infinity_polling()
 
 #--------------------------------
 
