@@ -177,63 +177,25 @@ def send_advertisement(message):
 
 
 #------------------------------------------
-#@bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi
-#def send_movie(message):
-    #user_id = message.chat.id
-    #if not check_subscription(user_id):
-        #markup = InlineKeyboardMarkup()
-        #for channel in CHANNELS:
-            #markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
-        #markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
-        #bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
-        #return  
-    
-    #message_id = int(message.text.strip())
-    #try:
-        #markup = InlineKeyboardMarkup()
-        #markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
-        #bot.copy_message(user_id, MOVIE_CHANNEL, message_id, reply_markup=markup)
-    #except Exception:
-        #bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
-#------------------------
-# Video fayl ID ni olish uchun funksiya
-def get_video_file_id_from_channel(message_id):
-# Bu yerda kanalga yuborilgan videoni olish
-# Aytaylik, MOVIE_CHANNEL kanaliga yuborilgan video faylini olish
-    try:
-        message = bot.get_chat_history(MOVIE_CHANNEL, limit=1)  # Kanalning oxirgi xabarini olish
-        for msg in message:
-            if msg.video:
-                return msg.video.file_id
-    except Exception as e:
-        print(f"Error getting video: {e}")
-        return None
-#-------------
-
-@bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi 
+@bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi
 def send_movie(message):
     user_id = message.chat.id
     if not check_subscription(user_id):
         markup = InlineKeyboardMarkup()
         for channel in CHANNELS:
-            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}"))
+            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
         markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
         bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
         return  
-
+    
     message_id = int(message.text.strip())
     try:
-        # Kino yoki video haqida chiroyli xabar
-        bot.send_message(user_id, f"🎬 Kino ID: {message_id} tayyor! Endi sizga bu kino bo'yicha batafsil ma'lumot yuboriladi.")
-        
-        # Video yuborilishi
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
-        bot.send_video(user_id, video_file_id, caption=f"🎥 Ushbu kinoni ko'rish uchun quyidagi tugmani bosing.", reply_markup=markup)
-
+        bot.copy_message(user_id, MOVIE_CHANNEL, message_id, reply_markup=markup)
+        
     except Exception:
         bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
-
 
 
 #----------------------------------------------
