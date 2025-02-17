@@ -1,7 +1,9 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import json
-import time  
+import time
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 TOKEN = "7314638802:AAEGABdxn_p7CiqogkP0T8xcDKZL2pxWzbM"  # 🔹 Tokenni almashtiring
 CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Obuna bo‘lishi shart bo‘lgan kanallar
@@ -11,7 +13,27 @@ USER_FILE = "users.json"
 
 bot = telebot.TeleBot(TOKEN)
 
-# Foydalanuvchilarni yuklash
+# Firebase service account faylini ulash
+cred = credentials.Certificate('service_account_key.json')  # 🔹 JSON faylni o'zgartiring
+firebase_admin.initialize_app(cred)
+
+# Firestore bilan ishlash
+db = firestore.client()
+
+# Foydalanuvchilarni Firebase'ga saqlash
+def save_user_to_firebase(user_id):
+    users_ref = db.collection('users')  # 'users' nomli kolleksiyani olish
+    users_ref.document(str(user_id)).set({'id': user_id})  # Foydalanuvchi ID'sini saqlash
+
+# Foydalanuvchilarni Firebase’dan olish
+def load_users_from_firebase():
+    users_ref = db.collection('users')  # 'users' kolleksiyasi
+    users = set()
+    for doc in users_ref.stream():  # Kolleksiyadagi hujjatlarni o'qish
+        users.add(doc.id)  # Hujjat ID'sini foydalanuvchi ro'yxatiga qo'shish
+    return users
+
+# Foydalanuvchilarni lokal saqlash
 def load_users():
     try:
         with open(USER_FILE, "r") as file:
@@ -19,7 +41,7 @@ def load_users():
     except (FileNotFoundError, json.JSONDecodeError):
         return set()
 
-# Foydalanuvchilarni saqlash
+# Foydalanuvchilarni lokal saqlash
 def save_users(users):
     try:
         with open(USER_FILE, "w") as file:
@@ -29,7 +51,7 @@ def save_users(users):
 
 users = load_users()
 
-# ✅ Obuna tekshirish funksiyasi (TO‘G‘RILANGAN)
+# ✅ Obuna tekshirish funksiyasi
 def check_subscription(user_id):
     time.sleep(1)  # API limitdan oshib ketmaslik uchun
     for channel in CHANNELS:
@@ -50,6 +72,7 @@ def start(message):
     user_id = message.chat.id
     users.add(user_id)
     save_users(users)
+    save_user_to_firebase(user_id)  # Firebase'ga saqlash
     
     if check_subscription(user_id):
         bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
@@ -65,7 +88,7 @@ def check_subs(call):
     else:
         bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
 
-# 🔹 Kanal obuna xabari (TO‘G‘RILANGAN)
+# 🔹 Kanal obuna xabari
 def send_subscription_message(user_id):
     markup = InlineKeyboardMarkup()
     
@@ -90,7 +113,7 @@ def reklama(message):
 # 🔹 Reklama yuborish funksiyasi
 def send_advertisement(message):
     global users
-    users = load_users()
+    users = load_users_from_firebase()  # Firebase'dan foydalanuvchilarni yuklash
     success, failed = 0, 0
     
     for user_id in users:
