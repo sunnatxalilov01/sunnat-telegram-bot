@@ -1,9 +1,14 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import json
-import time
+import time  
 import firebase_admin
 from firebase_admin import credentials, firestore
+
+# Firebase Admin SDK bilan ulanish
+cred = credentials.Certificate('service_account_key.json')
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 TOKEN = "7314638802:AAEGABdxn_p7CiqogkP0T8xcDKZL2pxWzbM"  # 🔹 Tokenni almashtiring
 CHANNELS = ["@test_uchun_kanall_1", "@test_uchun_kanall_2", "@test_uchun_kanall_3"]  # 🔹 Obuna bo‘lishi shart bo‘lgan kanallar
@@ -13,27 +18,7 @@ USER_FILE = "users.json"
 
 bot = telebot.TeleBot(TOKEN)
 
-# Firebase service account faylini ulash
-cred = credentials.Certificate('service_account_key.json')  # 🔹 JSON faylni o'zgartiring
-firebase_admin.initialize_app(cred)
-
-# Firestore bilan ishlash
-db = firestore.client()
-
-# Foydalanuvchilarni Firebase'ga saqlash
-def save_user_to_firebase(user_id):
-    users_ref = db.collection('users')  # 'users' nomli kolleksiyani olish
-    users_ref.document(str(user_id)).set({'id': user_id})  # Foydalanuvchi ID'sini saqlash
-
-# Foydalanuvchilarni Firebase’dan olish
-def load_users_from_firebase():
-    users_ref = db.collection('users')  # 'users' kolleksiyasi
-    users = set()
-    for doc in users_ref.stream():  # Kolleksiyadagi hujjatlarni o'qish
-        users.add(doc.id)  # Hujjat ID'sini foydalanuvchi ro'yxatiga qo'shish
-    return users
-
-# Foydalanuvchilarni lokal saqlash
+# Foydalanuvchilarni yuklash
 def load_users():
     try:
         with open(USER_FILE, "r") as file:
@@ -41,7 +26,7 @@ def load_users():
     except (FileNotFoundError, json.JSONDecodeError):
         return set()
 
-# Foydalanuvchilarni lokal saqlash
+# Foydalanuvchilarni saqlash
 def save_users(users):
     try:
         with open(USER_FILE, "w") as file:
@@ -51,7 +36,15 @@ def save_users(users):
 
 users = load_users()
 
-# ✅ Obuna tekshirish funksiyasi
+# Foydalanuvchilarni saqlash Firebase'ga
+def save_user_to_firebase(user_id):
+    user_ref = db.collection('users').document(str(user_id))
+    user_ref.set({
+        'user_id': user_id,
+        'joined_at': firestore.SERVER_TIMESTAMP
+    })
+
+# ✅ Obuna tekshirish funksiyasi (TO‘G‘RILANGAN)
 def check_subscription(user_id):
     time.sleep(1)  # API limitdan oshib ketmaslik uchun
     for channel in CHANNELS:
@@ -72,7 +65,7 @@ def start(message):
     user_id = message.chat.id
     users.add(user_id)
     save_users(users)
-    save_user_to_firebase(user_id)  # Firebase'ga saqlash
+    save_user_to_firebase(user_id)  # Firebase'ga foydalanuvchini qo‘shish
     
     if check_subscription(user_id):
         bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
@@ -88,7 +81,7 @@ def check_subs(call):
     else:
         bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
 
-# 🔹 Kanal obuna xabari
+# 🔹 Kanal obuna xabari (TO‘G‘RILANGAN)
 def send_subscription_message(user_id):
     markup = InlineKeyboardMarkup()
     
@@ -100,35 +93,6 @@ def send_subscription_message(user_id):
     markup.add(InlineKeyboardButton("✅ Obunani tekshirish", callback_data="check_subs"))
 
     bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va **✅ Obunani tekshirish** tugmasini bosing.", reply_markup=markup)
-
-# 🔹 Admin uchun reklama yuborish
-@bot.message_handler(commands=['reklama'])
-def reklama(message):
-    if message.chat.id == ADMIN_ID:
-        bot.send_message(ADMIN_ID, "📢 Reklama xabarini yuboring (matn, rasm yoki video).")
-        bot.register_next_step_handler(message, send_advertisement)
-    else:
-        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
-
-# 🔹 Reklama yuborish funksiyasi
-def send_advertisement(message):
-    global users
-    users = load_users_from_firebase()  # Firebase'dan foydalanuvchilarni yuklash
-    success, failed = 0, 0
-    
-    for user_id in users:
-        try:
-            if message.text:
-                bot.send_message(user_id, message.text)
-            elif message.photo:
-                bot.send_photo(user_id, message.photo[-1].file_id, caption=message.caption)
-            elif message.video:
-                bot.send_video(user_id, message.video.file_id, caption=message.caption)
-            success += 1
-        except Exception:
-            failed += 1
-    
-    bot.send_message(ADMIN_ID, f"✅ Reklama {success} foydalanuvchiga yuborildi! ❌ {failed} foydalanuvchiga yuborilmadi.")
 
 # 🔹 Kino kodini qabul qilish
 @bot.message_handler(func=lambda message: message.text.isdigit())
