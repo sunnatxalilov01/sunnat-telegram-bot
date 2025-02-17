@@ -171,3 +171,7 @@ def send_advertisement(message):
     bot.send_message(ADMIN_ID, f"✅ Reklama yuborildi! ❌ Yetib bormaganlar soni: {len(failed_users)}")
 
 bot.polling(none_stop=True)
+
+# 🔹 Botni doimiy ishlatish
+bot.remove_webhook()
+bot.infinity_polling()
