@@ -216,12 +216,8 @@ def send_movie(message):
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
         bot.send_video(user_id, video_file_id, caption=f"🎥 Ushbu kinoni ko'rish uchun quyidagi tugmani bosing.", reply_markup=markup)
-    
-    except Exception:
-        bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
-
-# Video fayl ID ni olish uchun funksiya
+    # Video fayl ID ni olish uchun funksiya
 def get_video_file_id_from_channel(message_id):
     # Bu yerda kanalga yuborilgan videoni olish
     # Aytaylik, MOVIE_CHANNEL kanaliga yuborilgan video faylini olish
@@ -233,6 +229,13 @@ def get_video_file_id_from_channel(message_id):
     except Exception as e:
         print(f"Error getting video: {e}")
         return None
+
+    
+    
+    except Exception:
+        bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
+
+
 
 #----------------------------------------------
 
