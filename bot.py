@@ -95,4 +95,8 @@ def send_advertisement(message):
             pass
     bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
 
-bot.polling(none_stop=True)
+# bot.polling(none_stop=True)
+# 🔹 Botni doimiy ishlatish
+bot.remove_webhook()
+bot.infinity_polling()
+
