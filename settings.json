@@ -1,0 +1,4 @@
+// settings.example.json -> "channels": ["@kanal_nomi"]
+{
+  "channels": []
+}
