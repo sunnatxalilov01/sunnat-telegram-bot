@@ -192,7 +192,7 @@ def send_movie(message):
     try:
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
-        bot.copy_message(user_id, "kino ID  ", MOVIE_CHANNEL, message_id, reply_markup=markup)
+        bot.copy_message(user_id, MOVIE_CHANNEL, message_id, reply_markup=markup)
     except Exception:
         bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
