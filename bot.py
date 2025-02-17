@@ -172,6 +172,33 @@ def send_advertisement(message):
             pass
     bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
 
+
+
+
+
+#------------------------------------------
+@bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi
+def send_movie(message):
+    user_id = message.chat.id
+    if not check_subscription(user_id):
+        markup = InlineKeyboardMarkup()
+        for channel in CHANNELS:
+            markup.add(InlineKeyboardButton(f"🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
+        markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
+        bot.send_message(user_id, "❌ Avval quyidagi kanallarga obuna bo‘ling va tasdiqlang!", reply_markup=markup)
+        return  
+    
+    message_id = int(message.text.strip())
+    try:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
+        bot.copy_message(user_id, MOVIE_CHANNEL, message_id, reply_markup=markup)
+    except Exception:
+        bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
+
+
+
+
 # bot.polling(none_stop=True)
 # 🔹 Botni doimiy ishlatish
 bot.remove_webhook()
