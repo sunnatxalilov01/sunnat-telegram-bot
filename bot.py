@@ -39,7 +39,7 @@ users = load_users()
 settings = load_settings()
 
 
-
+#-------------------------------------------------------------------
 
 
 # Kanal qo'shish
@@ -93,7 +93,7 @@ def list_channels(message):
         bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
 
 
-
+#------------------------------------------------------------
 
 
 def check_subscription(user_id):
@@ -130,6 +130,28 @@ def send_subscription_message(user_id):
         markup.add(InlineKeyboardButton("🔗 Kanalga o'tish", url=f"https://t.me/{channel[1:]}") )
     markup.add(InlineKeyboardButton("✅ Tasdiqlash", callback_data="check_subs"))
     bot.send_message(user_id, "🔹 Iltimos, quyidagi kanallarga obuna bo‘ling va tasdiqlash tugmasini bosing:", reply_markup=markup)
+
+
+
+
+#---------------------------------
+
+
+
+# Tasdiqlash tugmasi bosilganda
+@bot.callback_query_handler(func=lambda call: call.data == "check_subs")
+def callback_check_subs(call):
+    user_id = call.message.chat.id
+    if check_subscription(user_id):
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz!")
+    else:
+        send_subscription_message(user_id)  # Agar obuna bo'lmagan bo'lsa, qaytadan tasdiqlashni so'raymiz
+    bot.answer_callback_query(call.id)  # Callbackni javoblash
+
+
+#---------------------------------------------
+
+
 
 @bot.message_handler(commands=['reklama'])
 def reklama(message):
