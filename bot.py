@@ -196,6 +196,20 @@ def send_advertisement(message):
     #except Exception:
         #bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 #------------------------
+# Video fayl ID ni olish uchun funksiya
+def get_video_file_id_from_channel(message_id):
+# Bu yerda kanalga yuborilgan videoni olish
+# Aytaylik, MOVIE_CHANNEL kanaliga yuborilgan video faylini olish
+    try:
+        message = bot.get_chat_history(MOVIE_CHANNEL, limit=1)  # Kanalning oxirgi xabarini olish
+        for msg in message:
+            if msg.video:
+                return msg.video.file_id
+    except Exception as e:
+        print(f"Error getting video: {e}")
+        return None
+#-------------
+
 @bot.message_handler(func=lambda message: message.text.isdigit())  # Faqat son qabul qiladi 
 def send_movie(message):
     user_id = message.chat.id
@@ -217,21 +231,6 @@ def send_movie(message):
         markup.add(InlineKeyboardButton("📤 Do‘stlarga ulashish", switch_inline_query=str(message_id)))
         bot.send_video(user_id, video_file_id, caption=f"🎥 Ushbu kinoni ko'rish uchun quyidagi tugmani bosing.", reply_markup=markup)
 
-    # Video fayl ID ni olish uchun funksiya
-def get_video_file_id_from_channel(message_id):
-    # Bu yerda kanalga yuborilgan videoni olish
-    # Aytaylik, MOVIE_CHANNEL kanaliga yuborilgan video faylini olish
-    try:
-        message = bot.get_chat_history(MOVIE_CHANNEL, limit=1)  # Kanalning oxirgi xabarini olish
-        for msg in message:
-            if msg.video:
-                return msg.video.file_id
-    except Exception as e:
-        print(f"Error getting video: {e}")
-        return None
-
-    
-    
     except Exception:
         bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
