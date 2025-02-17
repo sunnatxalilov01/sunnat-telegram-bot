@@ -1,2 +1,5 @@
 pyTelegramBotAPI
 Flask
+telebot
+firebase-admin
+gunicorn
