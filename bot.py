@@ -139,7 +139,7 @@ def send_subscription_message(user_id):
 def callback_check_subs(call):
     user_id = call.message.chat.id
     if check_subscription(user_id):
-        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz!")
+        bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘ldingiz! Endi kino ID raqamini kiriting:")
     else:
         send_subscription_message(user_id)  # Agar obuna bo'lmagan bo'lsa, qaytadan tasdiqlashni so'raymiz
     bot.answer_callback_query(call.id)  # Callbackni javoblash
