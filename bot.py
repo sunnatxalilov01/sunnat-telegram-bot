@@ -254,6 +254,52 @@ def admin_actions(call):
             bot.send_message(ADMIN_ID, "♻️ Bot qayta ishga tushirilmoqda... (hozircha qo‘lda qayta ishga tushiring)")
     bot.answer_callback_query(call.id)
 
+
+# ---------------- Admin users Panel ----------
+@bot.message_handler(commands=['users'])
+def admin_panel(message):
+    if message.chat.id == ADMIN_ID:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("👥 Obunachilar soni", callback_data="subscribers"))
+        markup.add(InlineKeyboardButton("📊 Statistika", callback_data="stats"))
+        markup.add(InlineKeyboardButton("📢 Reklama yuborish", callback_data="send_ad"))
+        bot.send_message(ADMIN_ID, "🔹 Admin Panel", reply_markup=markup)
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+@bot.callback_query_handler(func=lambda call: call.data == "subscribers")
+def show_subscribers(call):
+    bot.send_message(ADMIN_ID, f"👥 Bot obunachilari soni: {len(users)} ta")
+
+@bot.callback_query_handler(func=lambda call: call.data == "stats")
+def show_stats(call):
+    stats = load_stats()
+    top_movies = sorted(stats["views"].items(), key=lambda x: x[1], reverse=True)[:5]
+    msg = "📊 Eng ko‘p ko‘rilgan 5 ta film:\n"
+    for i, (movie_id, views) in enumerate(top_movies, start=1):
+        msg += f"{i}. ID: {movie_id} - {views} marta\n"
+    bot.send_message(ADMIN_ID, msg)
+
+@bot.callback_query_handler(func=lambda call: call.data == "send_ad")
+def request_ad(call):
+    bot.send_message(ADMIN_ID, "📢 Reklama xabarini yuboring (matn, rasm yoki video).")
+    bot.register_next_step_handler(call.message, send_advertisement)
+
+def send_advertisement(message):
+    for user_id in users:
+        try:
+            if message.text:
+                bot.send_message(user_id, message.text)
+            elif message.photo:
+                bot.send_photo(user_id, message.photo[-1].file_id, caption=message.caption)
+            elif message.video:
+                bot.send_video(user_id, message.video.file_id, caption=message.caption)
+        except Exception:
+            pass
+    bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
+
+bot.infinity_polling()
+
 #--------------------------------
 
 # bot.polling(none_stop=True)
