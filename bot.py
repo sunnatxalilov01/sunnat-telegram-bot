@@ -3,10 +3,11 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import json
+import time  
 
-TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"
-MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"
-ADMIN_ID = 8936611
+TOKEN = "7817081851:AAG3ptyWEe1IpnImaeRZtw0mMQjmPi_nOXs"  # Bot tokenni shu yerga qo'ying
+MOVIE_CHANNEL = "@test_uchun_kanall_video_arxiv"  # Kinolar saqlanadigan kanal
+ADMIN_ID = 8936611  # Admin ID
 SETTINGS_FILE = "settings.json"
 USERS_FILE = "users.json"
 
@@ -36,6 +37,7 @@ def save_users(users):
 
 users = load_users()
 settings = load_settings()
+
 
 def check_subscription(user_id):
     channels = settings.get("channels", [])
@@ -79,6 +81,29 @@ def check_subs(call):
         bot.send_message(user_id, "✅ Siz barcha kanallarga azo bo‘lgansiz! Endi kino ID raqamini kiriting:")
     else:
         bot.send_message(user_id, "❌ Siz hali barcha kanallarga obuna bo‘lmadingiz! Avval ularga qo‘shiling.")
+
+@bot.message_handler(commands=['reklama'])
+def reklama(message):
+    if message.chat.id == ADMIN_ID:
+        bot.send_message(ADMIN_ID, "📢 Reklama xabarini yuboring (matn, rasm yoki video).")
+        bot.register_next_step_handler(message, send_advertisement)
+    else:
+        bot.send_message(message.chat.id, "❌ Siz admin emassiz!")
+
+def send_advertisement(message):
+    global users
+    users = load_users()  # 🔹 Har safar yangi foydalanuvchilarni yuklash
+    for user_id in users:
+        try:
+            if message.text:
+                bot.send_message(user_id, message.text)
+            elif message.photo:
+                bot.send_photo(user_id, message.photo[-1].file_id, caption=message.caption)
+            elif message.video:
+                bot.send_video(user_id, message.video.file_id, caption=message.caption)
+        except Exception:
+            pass
+    bot.send_message(ADMIN_ID, "✅ Reklama barcha foydalanuvchilarga yuborildi!")
 
 @bot.message_handler(commands=['kanallar'])
 def manage_channels(message):
@@ -150,28 +175,4 @@ def send_movie(message):
     except Exception:
         bot.send_message(user_id, "❌ Bunday Ko'd topilmadi yoki video mavjud emas!")
 
-# 📢 REKLAMA FUNKSIYASI
-@bot.message_handler(commands=['reklama'])
-def send_advertisement(message):
-    if message.chat.id != ADMIN_ID:
-        return
-    
-    text = message.text.replace("/reklama", "").strip()
-    if not text:
-        bot.send_message(ADMIN_ID, "❌ Foydalanish: /reklama Xabar matni")
-        return
-
-    failed_users = []
-    for user_id in users:
-        try:
-            bot.send_message(user_id, text)
-        except Exception:
-            failed_users.append(user_id)
-
-    bot.send_message(ADMIN_ID, f"✅ Reklama yuborildi! ❌ Yetib bormaganlar soni: {len(failed_users)}")
-
 bot.polling(none_stop=True)
-
-# 🔹 Botni doimiy ishlatish
-bot.remove_webhook()
-bot.infinity_polling()
